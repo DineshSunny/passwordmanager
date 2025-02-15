@@ -1,0 +1,12 @@
+so things we need to do
+
+take away the login screen and have a function to tap a keyfob or for demonstration purposes have a screen that allows us to type in the one time password
+test it out
+
+make an option to add passwords to their account
+
+make sure that it can repull those passwords when the program is active
+
+encrypt passwords held in the system
+
+-set up the otp generator and method of sending
