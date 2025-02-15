@@ -1,0 +1,136 @@
+import random
+
+import bcrypt
+import mysql.connector
+from cryptography.fernet import Fernet
+from flask import Flask, request, jsonify
+from flask_mail import Mail, Message
+from twilio.rest import Client
+
+app = Flask(__name__)
+
+#generate a key for encryption
+key = Fernet.generate_key()
+cipher_suite = Fernet(key)
+
+# Simulate a user database
+users = {'admin': 'password'}
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    if users.get(username) == password:
+        return jsonify({'success': True})
+    return jsonify({'success': False})
+
+# MySQL configuration
+db = mysql.connector.connect(
+    host="127.0.0.1",
+    user="root",
+    password="FireN0de$!@#",
+    database="padlock"
+)
+
+# Twilio configuration
+account_sid = 'AC14ae5be04d52903de08d31d8cce1515f'
+auth_token = 'e63e0d63cf2d49a01f2268148efbb174'
+twilio_client = Client(account_sid, auth_token)
+
+# Flask-Mail configuration
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USERNAME'] = 'your_email@gmail.com'
+app.config['MAIL_PASSWORD'] = 'your_email_password'
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+mail = Mail(app)
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.json
+    name = data['name']
+    email = data['email']
+    phone = data['phone']
+    otp = random.randint(100000, 999999)
+
+
+    cursor = db.cursor()
+    sql = "INSERT INTO users (name, email, phone, otp) VALUES (%s, %s, %s, %s)"
+    cursor.execute(sql, (name, email, phone, otp))
+    db.commit()
+
+    # Send OTP via SMS
+    twilio_client.messages.create(
+        body=f"Your OTP is {otp}",
+        from_='+1234567890',
+        to=phone
+    )
+
+    # Send OTP via Email
+    msg = Message('Your OTP Code', sender='your_email@gmail.com', recipients=[email])
+    msg.body = f"Your OTP is {otp}"
+    mail.send(msg)
+
+    return jsonify({"message": "User registered and OTP sent"}), 201
+
+@app.route('/verify-otp', methods=['POST'])
+def verify_otp():
+    data = request.json
+    email = data['email']
+    otp = data['otp']
+
+    cursor = db.cursor()
+    sql = "SELECT * FROM users WHERE email = %s AND otp = %s"
+    cursor.execute(sql, (email, otp))
+    result = cursor.fetchone()
+
+    if result:
+        return jsonify({"message": "OTP verified"}), 200
+    else:
+        return jsonify({"message": "Invalid OTP"}), 400
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+    @app.route('/add-password', methods=['POST'])
+    def add_password():
+        data = request.json
+        website = data['website']
+        username = data['username']
+        password = data['password']
+
+        # Encrypt the password
+        encrypted_password = cipher_suite.encrypt(password.encode('utf-8'))
+
+        cursor = db.cursor()
+        sql = "INSERT INTO passwords (website, username, password) VALUES (%s, %s, %s)"
+        cursor.execute(sql, (website, username, encrypted_password))
+        db.commit()
+
+        return jsonify({"message": "Password added"}), 201
+
+
+    @app.route('/get-passwords', methods=['GET'])
+    def get_passwords():
+        cursor = db.cursor()
+        cursor.execute("SELECT website, username, password FROM passwords")
+        results = cursor.fetchall()
+
+        passwords = []
+        for row in results:
+            decrypted_password = cipher_suite.decrypt(row[2]).decode('utf-8')
+            passwords.append({
+                'website': row[0],
+                'username': row[1],
+                'password': decrypted_password
+            })
+
+        return jsonify(passwords), 200
+
+
+    if __name__ == '__main__':
+        app.run(debug=True)
