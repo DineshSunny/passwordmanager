@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facial Recognition and OTP</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: url('background.jpg') no-repeat center center/cover; /* Background image */
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.9); /* Semi-transparent white box */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 400px;
+        }
+        video {
+            display: block;
+            margin: 10px auto;
+            border-radius: 5px;
+        }
+        button {
+            display: block;
+            width: 90%;
+            padding: 10px;
+            margin: 10px auto;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px auto;
+            font-size: 16px;
+            text-align: center; /* Centers text inside input */
+            display: block;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Authentication</h1>
+        <p>Please ensure your face is visible for facial recognition.</p>
+        <video id="video" width="320" height="240" autoplay></video>
+
+        <!-- Centered Start Camera Button -->
+        <button id="start-camera" onclick="startCamera()">Start Camera</button>
+
+        <p>Please enter the one-time password (OTP) sent to you</p>
+        <!-- Centered input with text inside -->
+        <input type="text" id="otp" placeholder="Enter OTP" />
+
+        <button id="submit-otp" onclick="submitOTP()">Submit OTP</button>
+    </div>
+
+    <script>
+        // Function to start the camera when the button is clicked
+        function startCamera() {
+            const video = document.getElementById('video');
+
+            // Check if the browser supports getUserMedia
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                // Request the webcam stream
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function(stream) {
+                        // Set the video element's source to the stream
+                        video.srcObject = stream;
+                    })
+                    .catch(function(error) {
+                        console.log('Error accessing the camera: ', error);
+                    });
+            } else {
+                alert('Camera not supported in this browser');
+            }
+        }
+
+        // Function to submit OTP (Placeholder)
+        function submitOTP() {
+            const otp = document.getElementById('otp').value;
+            if (otp) {
+                console.log('OTP Submitted:', otp);
+                alert('OTP Submitted');
+            } else {
+                alert('Please enter OTP');
+            }
+        }
+    </script>
+</body>
+</html>

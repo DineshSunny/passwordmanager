@@ -5,17 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Key Fob Login</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: url('background.jpg') no-repeat center center/cover;
         }
         .container {
-            max-width: 400px;
-            margin: auto;
+            background: rgba(255, 255, 255, 0.85); /* Slight transparency */
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 400px;
+        }
+        h2 {
+            margin-bottom: 15px;
         }
         input, button {
             width: 90%;
@@ -30,10 +42,8 @@
 </head>
 <body>
 
-
-    
     <div class="container">
-        <h2>Touch your Key Fob</h2>
+        <h2>Tap the Reader</h2>
         <input type="text" id="keyFobInput" placeholder="Scan Key Fob..." autofocus>
         <button onclick="submitKeyFob()">Submit</button>
 
@@ -61,4 +71,34 @@
                     alert("OTP sent to your registered phone number.");
                     document.getElementById("otpSection").classList.remove("hidden");
                 } else {
-                    alert("Key Fob not recognized
+                    alert("Key Fob not recognized");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        function verifyOTP() {
+            let otp = document.getElementById("otpInput").value;
+
+            fetch("http://127.0.0.1:5000/verify-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ otp: otp })
+            })
+            .then(response => response.json())
+            .then(data => {
+                let statusMessage = document.getElementById("statusMessage");
+                if (data.success) {
+                    statusMessage.innerText = "Login successful!";
+                    statusMessage.style.color = "green";
+                } else {
+                    statusMessage.innerText = "Invalid OTP. Try again.";
+                    statusMessage.style.color = "red";
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+
+</body>
+</html>
