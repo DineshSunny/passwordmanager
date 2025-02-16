@@ -1,3 +1,4 @@
 This program is designed to block unwanted access to a system using three different verification tools: a key fob, a one-time password (OTP), and a facial recognition program. It offers flexibility, allowing you to set it up as a single-use verification system or scale it up to a full-fledged password manager.
 
 When passwords are encrypted, they go through four different levels of encryption, followed by an additional layer of AES-256 encryption. This multi-layered approach ensures maximum security for your sensitive information.
+ 
