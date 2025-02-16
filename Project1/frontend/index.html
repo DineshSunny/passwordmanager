@@ -57,9 +57,11 @@
     </div>
 
     <script>
+        // Function to handle keyfob submission
         function submitKeyFob() {
             let keyFobId = document.getElementById("keyFobInput").value;
 
+            // Sending keyfob ID to backend for validation
             fetch("http://127.0.0.1:5000/keyfob-login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -68,18 +70,22 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // If keyfob is authenticated, show OTP input section
                     alert("OTP sent to your registered phone number.");
                     document.getElementById("otpSection").classList.remove("hidden");
                 } else {
+                    // If keyfob is not recognized, show error message
                     alert("Key Fob not recognized");
                 }
             })
             .catch(error => console.error("Error:", error));
         }
 
+        // Function to handle OTP verification
         function verifyOTP() {
             let otp = document.getElementById("otpInput").value;
 
+            // Sending entered OTP to backend for verification
             fetch("http://127.0.0.1:5000/verify-otp", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -89,9 +95,11 @@
             .then(data => {
                 let statusMessage = document.getElementById("statusMessage");
                 if (data.success) {
+                    // If OTP is valid, show success message
                     statusMessage.innerText = "Login successful!";
                     statusMessage.style.color = "green";
                 } else {
+                    // If OTP is invalid, show error message
                     statusMessage.innerText = "Invalid OTP. Try again.";
                     statusMessage.style.color = "red";
                 }

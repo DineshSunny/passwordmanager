@@ -61,19 +61,19 @@
         <p>Please ensure your face is visible for facial recognition.</p>
         <video id="video" width="320" height="240" autoplay></video>
 
-        <!-- Centered Start Camera Button -->
-        <button id="start-camera" onclick="startCamera()">Start Camera</button>
-
-        <p>Please enter the one-time password (OTP) sent to you</p>
+        <p>Enter Your One-Time Password</p>
         <!-- Centered input with text inside -->
-        <input type="text" id="otp" placeholder="Enter OTP" />
+        <input type="text" id="otp" placeholder="Enter here" />
 
         <button id="submit-otp" onclick="submitOTP()">Submit OTP</button>
     </div>
 
     <script>
-        // Function to start the camera when the button is clicked
-        function startCamera() {
+        let cameraStream = null;
+        let facialRecognitionInProgress = false;
+
+        // Function to start the camera immediately when the page loads
+        window.onload = function() {
             const video = document.getElementById('video');
 
             // Check if the browser supports getUserMedia
@@ -81,8 +81,11 @@
                 // Request the webcam stream
                 navigator.mediaDevices.getUserMedia({ video: true })
                     .then(function(stream) {
-                        // Set the video element's source to the stream
+                        cameraStream = stream;
                         video.srcObject = stream;
+
+                        // Start sending frames for facial recognition once the camera is on
+                        startFacialRecognition();
                     })
                     .catch(function(error) {
                         console.log('Error accessing the camera: ', error);
@@ -90,7 +93,7 @@
             } else {
                 alert('Camera not supported in this browser');
             }
-        }
+        };
 
         // Function to submit OTP (Placeholder)
         function submitOTP() {
@@ -98,6 +101,83 @@
             if (otp) {
                 console.log('OTP Submitted:', otp);
                 alert('OTP Submitted');
+            } else {
+                alert('Please enter OTP');
+            }
+        }
+
+        // Function to continuously capture frames for facial recognition
+        function startFacialRecognition() {
+            const video = document.getElementById('video');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Loop to capture frames from the video stream
+            setInterval(function() {
+                if (cameraStream) {
+                    // Draw the current frame to the canvas
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                    // Get the image data
+                    const imageData = canvas.toDataURL('image/jpeg');
+
+                    // Send the image data for facial recognition verification
+                    verifyFace(imageData);
+                }
+            }, 100); // Capture frame every 100ms
+        }
+
+        // Function to send the captured frame for facial recognition
+        function verifyFace(imageData) {
+            // Example: Sending the image data to the backend (API request)
+            fetch('/verify-face', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    image: imageData,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.faceVerified) {
+                    console.log('Face recognized');
+                    // If face is verified, check OTP
+                    verifyOTP();
+                } else {
+                    console.log('Face not recognized');
+                }
+            })
+            .catch(error => {
+                console.error('Error in facial recognition:', error);
+            });
+        }
+
+        // Function to verify OTP (Placeholder)
+        function verifyOTP() {
+            const otp = document.getElementById('otp').value;
+            if (otp) {
+                // Send OTP for backend validation
+                fetch('/verify-otp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ otp: otp }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.otpVerified) {
+                        console.log('OTP verified');
+                        window.location.href = '/homepage'; // Redirect to homepage
+                    } else {
+                        alert('Invalid OTP');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error verifying OTP:', error);
+                });
             } else {
                 alert('Please enter OTP');
             }
