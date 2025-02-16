@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Key Fob Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Touch your Key Fob</h2>
+        <input type="text" id="keyFobInput" placeholder="Scan Key Fob..." autofocus>
+        <button onclick="submitKeyFob()">Submit</button>
+
+        <div id="otpSection" class="hidden">
+            <h2>Enter OTP</h2>
+            <input type="text" id="otpInput" placeholder="Enter OTP">
+            <button onclick="verifyOTP()">Verify OTP</button>
+        </div>
+
+        <h2 id="statusMessage"></h2>
+    </div>
+
+    <script>
+        function submitKeyFob() {
+            let keyFobId = document.getElementById("keyFobInput").value;
+
+            fetch("http://127.0.0.1:5000/keyfob-login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ key_fob_id: keyFobId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("OTP sent to your registered phone number.");
+                    document.getElementById("otpSection").classList.remove("hidden");
+                } else {
+                    alert("Key Fob not recognized
