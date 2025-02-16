@@ -1,0 +1,62 @@
+from cryptography.fernet import Fernet
+
+# Generate keys for each level of encryption
+key1 = Fernet.generate_key()
+key2 = Fernet.generate_key()
+key3 = Fernet.generate_key()
+key4 = Fernet.generate_key()
+
+cipher1 = Fernet(key1)
+cipher2 = Fernet(key2)
+cipher3 = Fernet(key3)
+cipher4 = Fernet(key4)
+
+
+def encrypt(password):
+    print(f"Original password: {password}")
+
+    # Level 1 encryption
+    encrypted1 = cipher1.encrypt(password.encode())
+    print(f"Level 1 encrypted: {encrypted1}")
+
+    # Level 2 encryption
+    encrypted2 = cipher2.encrypt(encrypted1)
+    print(f"Level 2 encrypted: {encrypted2}")
+
+    # Level 3 encryption
+    encrypted3 = cipher3.encrypt(encrypted2)
+    print(f"Level 3 encrypted: {encrypted3}")
+
+    # Level 4 encryption
+    encrypted4 = cipher4.encrypt(encrypted3)
+    print(f"Level 4 encrypted: {encrypted4}")
+
+    return encrypted4
+
+
+def decrypt(encrypted_password):
+    print(f"Level 4 encrypted: {encrypted_password}")
+
+    # Level 4 decryption
+    decrypted3 = cipher4.decrypt(encrypted_password)
+    print(f"Level 3 encrypted: {decrypted3}")
+
+    # Level 3 decryption
+    decrypted2 = cipher3.decrypt(decrypted3)
+    print(f"Level 2 encrypted: {decrypted2}")
+
+    # Level 2 decryption
+    decrypted1 = cipher2.decrypt(decrypted2)
+    print(f"Level 1 encrypted: {decrypted1}")
+
+    # Level 1 decryption
+    original_password = cipher1.decrypt(decrypted1).decode()
+    print(f"Original password: {original_password}")
+
+    return original_password
+
+
+# Example usage
+password = "my_secure_password"
+encrypted_password = encrypt(password)
+decrypted_password = decrypt(encrypted_password)
