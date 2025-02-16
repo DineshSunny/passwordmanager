@@ -1,4 +1,7 @@
 from cryptography.fernet import Fernet
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
+import base64
 
 # Generate keys for each level of encryption
 key1 = Fernet.generate_key()
@@ -11,6 +14,8 @@ cipher2 = Fernet(key2)
 cipher3 = Fernet(key3)
 cipher4 = Fernet(key4)
 
+# Generate AES key
+aes_key = AES.get_random_bytes(32)  # 256-bit key
 
 def encrypt(password):
     print(f"Original password: {password}")
@@ -31,14 +36,29 @@ def encrypt(password):
     encrypted4 = cipher4.encrypt(encrypted3)
     print(f"Level 4 encrypted: {encrypted4}")
 
-    return encrypted4
+    # AES-256 encryption
+    cipher_aes = AES.new(aes_key, AES.MODE_CBC)
+    ct_bytes = cipher_aes.encrypt(pad(encrypted4, AES.block_size))
+    iv = base64.b64encode(cipher_aes.iv).decode('utf-8')
+    ct = base64.b64encode(ct_bytes).decode('utf-8')
+    aes_encrypted = f"{iv}:{ct}"
+    print(f"AES-256 encrypted: {aes_encrypted}")
 
+    return aes_encrypted
 
-def decrypt(encrypted_password):
-    print(f"Level 4 encrypted: {encrypted_password}")
+def decrypt(aes_encrypted):
+    print(f"AES-256 encrypted: {aes_encrypted}")
+
+    # AES-256 decryption
+    iv, ct = aes_encrypted.split(':')
+    iv = base64.b64decode(iv)
+    ct = base64.b64decode(ct)
+    cipher_aes = AES.new(aes_key, AES.MODE_CBC, iv)
+    decrypted4 = unpad(cipher_aes.decrypt(ct), AES.block_size)
+    print(f"Level 4 encrypted: {decrypted4}")
 
     # Level 4 decryption
-    decrypted3 = cipher4.decrypt(encrypted_password)
+    decrypted3 = cipher4.decrypt(decrypted4)
     print(f"Level 3 encrypted: {decrypted3}")
 
     # Level 3 decryption
@@ -54,7 +74,6 @@ def decrypt(encrypted_password):
     print(f"Original password: {original_password}")
 
     return original_password
-
 
 # Example usage
 password = "my_secure_password"
